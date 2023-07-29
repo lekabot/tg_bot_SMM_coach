@@ -4,7 +4,10 @@ import threading
 import time
 import re
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
+file_path = "phone_numbers.txt"
 bot = telebot.TeleBot(config.TOKEN)
 
 last_contact_time = {}
@@ -172,6 +175,14 @@ def phone_number_in_database(phone_number):
 def save_phone_number_to_file(username, phone_number):
     with open("phone_numbers.txt", "a") as file:
         file.write(f"{username} {phone_number} 0\n")
+
+
+def send_fourth_video(chat_id):
+    bot.send_message(chat_id, "Наш менеджер связался с тобой и мы "
+                              "подписали тебя на курс СММ за 3 месяца, держи "
+                              "в подарок следующий видеоурок. \nhttps://www.youtube.com/watch?v=O4irXQhgMqg&list=RDpAgnJDJN4VA&index=3&ab_channel=ABKCOVEVO")
+
+
 
 
 bot.polling()
