@@ -15,6 +15,12 @@ waiting_for_phone = {}
 current_keyboard = None
 
 
+def remove_last_button_from_keyboard():
+    global current_keyboard
+    if isinstance(current_keyboard, ReplyKeyboardMarkup) and current_keyboard.keyboard:
+        current_keyboard.keyboard.pop()
+
+
 def check_10_seconds(user_id):
     current_time = time.time()
     if user_id not in last_contact_time:
@@ -51,6 +57,15 @@ def send_third_message(chat_id, user_id):
     waiting_for_phone[user_id] = True
 
 
+def send_third_video(chat_id):
+    global current_keyboard
+    remove_last_button_from_keyboard()
+    current_keyboard.add(KeyboardButton("Посмотреть третье видео еще раз"))
+    bot.send_message(chat_id, "Наш менеджер связался с тобой и мы "
+                              "подписали тебя на курс СММ за 3 месяца, держи "
+                              "в подарок следующий видеоурок. \nhttps://www.youtube.com/watch?v=O4irXQhgMqg&list=RDpAgnJDJN4VA&index=3&ab_channel=ABKCOVEVO", reply_markup=current_keyboard)
+
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.send_message(message.chat.id, "Приветствую тебя, ученик СММ!")
@@ -67,6 +82,12 @@ def schedule_second_video_message(user_id):
         send_second_video_message(user_id)
         last_contact_time[user_id] = time.time()
         threading.Timer(10, send_third_message, args=(user_id, user_id)).start()
+
+
+@bot.message_handler(func=lambda message: message.text == "Посмотреть третье видео еще раз")
+def send_third_video_again(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley")
 
 
 @bot.message_handler(func=lambda message: message.text == "Посмотреть первое видео еще раз")
@@ -152,6 +173,7 @@ def handle_text_message(message):
                 bot.send_message(message.chat.id,
                                  "Твой номер телефона уже есть в нашей базе данных. Мы обязательно с тобой свяжемся.",
                                  reply_markup=current_keyboard)
+            threading.Timer(10, send_third_video, args=(message.from_user.id,)).start()
         else:
             bot.send_message(message.chat.id, "Неправильный формат телефонного номера. Попробуй еще раз.")
     else:
@@ -175,14 +197,6 @@ def phone_number_in_database(phone_number):
 def save_phone_number_to_file(username, phone_number):
     with open("phone_numbers.txt", "a") as file:
         file.write(f"{username} {phone_number} 0\n")
-
-
-def send_fourth_video(chat_id):
-    bot.send_message(chat_id, "Наш менеджер связался с тобой и мы "
-                              "подписали тебя на курс СММ за 3 месяца, держи "
-                              "в подарок следующий видеоурок. \nhttps://www.youtube.com/watch?v=O4irXQhgMqg&list=RDpAgnJDJN4VA&index=3&ab_channel=ABKCOVEVO")
-
-
 
 
 bot.polling()
